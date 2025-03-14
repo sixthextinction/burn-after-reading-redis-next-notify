@@ -27,6 +27,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
+        <div className="fixed inset-0 bg-gradient-to-br from-red-800 to-red-900 -z-10"></div>
         {children}
       </body>
     </html>
