@@ -32,7 +32,7 @@ export async function GET(
       ? JSON.parse(messageData) 
       : messageData;
 
-    // No automatic deletion on GET - we'll use DELETE for that
+    // NOTE: no automatic deletion on GET - we'll use DELETE for that
 
     // step 3. return message
     return NextResponse.json({ message: parsedMessage });
@@ -60,7 +60,7 @@ export async function DELETE(
       );
     }
 
-    // Get the message first to return it
+    // step 1: get the message first to return it
     const messageData = await redis.get(messageId);
     
     if (!messageData) {
@@ -70,15 +70,15 @@ export async function DELETE(
       );
     }
     
-    // Parse message from redis
+    // step 2: parse message from redis
     const parsedMessage = typeof messageData === 'string' 
       ? JSON.parse(messageData) 
       : messageData;
 
-    // Delete the message from Redis
+    // step 3: delete the message from Redis
     await redis.del(messageId);
 
-    // Return the deleted message
+    // step 4: return the deleted message
     return NextResponse.json({ 
       success: true,
       message: parsedMessage 
