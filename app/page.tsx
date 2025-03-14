@@ -1,103 +1,157 @@
-import Image from "next/image";
+'use client';
+
+import { useState } from 'react';
+import Link from 'next/link';
 
 export default function Home() {
-  return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [message, setMessage] = useState('');
+  const [expirationType, setExpirationType] = useState('one-time');
+  const [expirationValue, setExpirationValue] = useState('10');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [messageId, setMessageId] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message,
+          expirationType,
+          expirationValue,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to create message');
+      }
+
+      setMessageId(data.messageId);
+    } catch (err) {
+      setError((err as Error).message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const messageLink = messageId ? `${window.location.origin}/read/${messageId}` : '';
+
+  return (
+    <main className="flex min-h-screen flex-col items-center justify-center p-4 md:p-24">
+      <div className="w-full max-w-md">
+        <h1 className="text-3xl font-bold mb-6 text-center">Burn After Reading</h1>
+        
+        {!messageId ? (
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div>
+              <label htmlFor="message" className="block text-sm font-medium mb-1">
+                Secret Message
+              </label>
+              <textarea
+                id="message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md min-h-32 bg-white dark:bg-gray-800 text-black dark:text-white"
+                placeholder="Type your secret message here..."
+                required
+              />
+            </div>
+
+            <div>
+              <label htmlFor="expirationType" className="block text-sm font-medium mb-1">
+                Expiration Type
+              </label>
+              <select
+                id="expirationType"
+                value={expirationType}
+                onChange={(e) => setExpirationType(e.target.value)}
+                className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 text-black dark:text-white"
+              >
+                <option value="one-time">One-time view (disappears after reading)</option>
+                <option value="time-based">Time-based expiry</option>
+              </select>
+            </div>
+
+            {expirationType === 'time-based' && (
+              <div>
+                <label htmlFor="expirationValue" className="block text-sm font-medium mb-1">
+                  Expiration Time (minutes)
+                </label>
+                <select
+                  id="expirationValue"
+                  value={expirationValue}
+                  onChange={(e) => setExpirationValue(e.target.value)}
+                  className="w-full p-2 border border-gray-300 rounded-md bg-white dark:bg-gray-800 text-black dark:text-white"
+                >
+                  <option value="10">10 minutes</option>
+                  <option value="30">30 minutes</option>
+                  <option value="60">1 hour</option>
+                  <option value="1440">24 hours</option>
+                </select>
+              </div>
+            )}
+
+            <button
+              type="submit"
+              disabled={isSubmitting}
+              className="w-full py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md disabled:opacity-50"
+            >
+              {isSubmitting ? 'Creating...' : 'Create Secret Message'}
+            </button>
+
+            {error && (
+              <div className="p-2 text-red-500 text-sm">{error}</div>
+            )}
+          </form>
+        ) : (
+          <div className="space-y-4">
+            <div className="p-4 bg-green-100 dark:bg-green-900 rounded-md">
+              <p className="text-green-800 dark:text-green-200 mb-2">
+                Your secret message has been created!
+              </p>
+              <p className="text-sm text-green-700 dark:text-green-300">
+                Share this link with the recipient. The message will be destroyed after reading
+                {expirationType === 'time-based' && ` or after ${expirationValue} minutes`}.
+              </p>
+            </div>
+
+            <div className="p-3 bg-gray-100 dark:bg-gray-800 rounded-md break-all">
+              <p className="text-sm font-mono">{messageLink}</p>
+            </div>
+
+            <div className="flex space-x-2">
+              <button
+                onClick={() => navigator.clipboard.writeText(messageLink)}
+                className="flex-1 py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-md"
+              >
+                Copy Link
+              </button>
+              <Link
+                href={`/read/${messageId}`}
+                className="flex-1 py-2 px-4 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-md text-center"
+              >
+                View Message
+              </Link>
+            </div>
+
+            <button
+              onClick={() => setMessageId(null)}
+              className="w-full py-2 px-4 bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 font-medium rounded-md mt-4"
+            >
+              Create Another Message
+            </button>
+          </div>
+        )}
+      </div>
+    </main>
   );
 }
