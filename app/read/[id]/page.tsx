@@ -24,7 +24,7 @@ export default function ReadMessage({
 }: {
   params: Promise<{ id: string }>;
 }) {
-  // Unwrap the params promise using React.use()
+  // Nextjs 15 stuff: unwrap params promise w/ React.use()
   const resolvedParams = use(params);
   const { id } = resolvedParams;
 
@@ -37,7 +37,6 @@ export default function ReadMessage({
   useEffect(() => {
     const fetchMessage = async () => {
       try {
-        // Simple GET request - no action parameter needed
         const response = await fetch(`/api/messages/${id}`);
         const data = await response.json();
 
@@ -56,18 +55,41 @@ export default function ReadMessage({
     fetchMessage();
   }, [id]);
 
-  const handleReveal = () => {
+  const handleReveal = async () => {
     setIsRevealed(true);
     
-    // Only delete one-time messages after the user has seen them
-    if (message?.expirationType === "one-time") {
-      deleteMessage();
+    try {
+      // send notification email that the message was read
+      const currentTime = new Date().toISOString();
+      
+      await fetch('/api/messages/notify', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          messageId: id,
+          messageContent: message?.content,
+          readTime: currentTime
+        }),
+      });
+      
+      // only delete one-time messages after the user has seen them
+      if (message?.expirationType === "one-time") {
+        deleteMessage();
+      }
+    } catch (err) {
+      console.error("Failed to send notification:", err);
+      
+      // still delete one-time messages even if notification fails
+      if (message?.expirationType === "one-time") {
+        deleteMessage();
+      }
     }
   };
   
   const deleteMessage = async () => {
     try {
-      // Use DELETE HTTP method
       const response = await fetch(`/api/messages/${id}`, {
         method: 'DELETE',
       });
@@ -187,7 +209,7 @@ export default function ReadMessage({
                         ? "This message has now been destroyed and cannot be read again."
                         : message?.expirationType === "time-based" 
                           ? `This message will expire after ${message?.expirationValue} minutes.`
-                          : "This message will be destroyed when you leave this page."}
+                          : "This message will now be destroyed."}
                     </p>
                   </div>
                 </div>

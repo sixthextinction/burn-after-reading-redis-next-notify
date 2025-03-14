@@ -8,6 +8,7 @@ A secure self-destructing message system built with Next.js, Redis (Upstash), an
 - Choose between one-time view or time-based expiration
 - Secure message storage in Redis
 - Unique access links for each message
+- Email notifications when messages are read
 
 ## How It Works
 
@@ -23,19 +24,23 @@ A secure self-destructing message system built with Next.js, Redis (Upstash), an
    - When the recipient opens the link, they'll see a warning that the message will be destroyed after viewing
    - After revealing the message, it's immediately deleted from the database if it's a one-time view
    - Time-based messages are automatically deleted after their expiration time on the Redis side
+   - An email notification is sent to the configured email address when a message is read
 
 ## Technology Stack
 
 - **Frontend**: Next.js with React and Tailwind CSS
 - **Backend**: Next.js API Routes
 - **Database**: Upstash Redis
+- **Notifications**: Notify.cx for email notifications
 - **Deployment**: Vercel (recommended?)
 
 ## Environment Variables
 
-You need these env vars for Upstash Redis:
+You need these env vars:
 
 ```
 UPSTASH_REDIS_REST_URL=your-redis-url
 UPSTASH_REDIS_REST_TOKEN=your-redis-token
+NOTIFY_API_KEY=your-notify-api-key
+NOTIFICATION_EMAIL=your-notification-email@example.com
 ```
