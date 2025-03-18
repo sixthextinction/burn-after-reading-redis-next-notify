@@ -1,5 +1,5 @@
-import { NextRequest, NextResponse } from 'next/server';
-import redis from '@/app/lib/redis';
+import { NextRequest, NextResponse } from "next/server";
+import redis from "@/app/lib/redis";
 
 export async function GET(
   request: NextRequest,
@@ -10,7 +10,7 @@ export async function GET(
 
     if (!messageId) {
       return NextResponse.json(
-        { error: 'Message ID is required' },
+        { error: "Message ID is required" },
         { status: 400 }
       );
     }
@@ -18,28 +18,25 @@ export async function GET(
     // step 1: get message from redis
     const messageData = await redis.get(messageId);
 
-    console.log("found =", messageData);
-
     if (!messageData) {
       return NextResponse.json(
-        { error: 'Message not found or has expired' },
+        { error: "Message not found or has expired" },
         { status: 404 }
       );
     }
 
     // step 2: parse message from redis
-    const parsedMessage = typeof messageData === 'string' 
-      ? JSON.parse(messageData) 
-      : messageData;
+    const parsedMessage =
+      typeof messageData === "string" ? JSON.parse(messageData) : messageData;
 
     // NOTE: no automatic deletion on GET - we'll use DELETE for that
 
     // step 3. return message
     return NextResponse.json({ message: parsedMessage });
   } catch (error) {
-    console.error('Error retrieving message:', error);
+    console.error("Error retrieving message:", error);
     return NextResponse.json(
-      { error: 'Failed to retrieve message' },
+      { error: "Failed to retrieve message" },
       { status: 500 }
     );
   }
@@ -55,39 +52,38 @@ export async function DELETE(
 
     if (!messageId) {
       return NextResponse.json(
-        { error: 'Message ID is required' },
+        { error: "Message ID is required" },
         { status: 400 }
       );
     }
 
     // step 1: get the message first to return it
     const messageData = await redis.get(messageId);
-    
+
     if (!messageData) {
       return NextResponse.json(
-        { error: 'Message not found or has expired' },
+        { error: "Message not found or has expired" },
         { status: 404 }
       );
     }
-    
+
     // step 2: parse message from redis
-    const parsedMessage = typeof messageData === 'string' 
-      ? JSON.parse(messageData) 
-      : messageData;
+    const parsedMessage =
+      typeof messageData === "string" ? JSON.parse(messageData) : messageData;
 
     // step 3: delete the message from Redis
     await redis.del(messageId);
 
     // step 4: return the deleted message
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
-      message: parsedMessage 
+      message: parsedMessage,
     });
   } catch (error) {
-    console.error('Error deleting message:', error);
+    console.error("Error deleting message:", error);
     return NextResponse.json(
-      { error: 'Failed to delete message' },
+      { error: "Failed to delete message" },
       { status: 500 }
     );
   }
-} 
+}
