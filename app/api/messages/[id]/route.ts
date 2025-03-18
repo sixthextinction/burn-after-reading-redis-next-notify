@@ -3,10 +3,10 @@ import redis from "@/app/lib/redis";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const messageId = params.id;
+    const { id: messageId } = await params;
 
     if (!messageId) {
       return NextResponse.json(
@@ -45,10 +45,10 @@ export async function GET(
 // DELETE method to handle explicit deletion
 export async function DELETE(
   request: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const messageId = params.id;
+    const { id: messageId } = await params;
 
     if (!messageId) {
       return NextResponse.json(
