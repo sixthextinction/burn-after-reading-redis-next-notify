@@ -1,6 +1,6 @@
 # Burn After Reading
 
-A secure self-destructing message system built with Next.js, Redis (Upstash), and Tailwind CSS.
+A secure self-destructing message system built with Next.js, Redis ([Upstash](https://upstash.com/)), [Notify](https://notify.cx/), and Tailwind CSS.
 
 ## Features
 
