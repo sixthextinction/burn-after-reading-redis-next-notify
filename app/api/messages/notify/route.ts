@@ -47,8 +47,7 @@ export async function POST(request: NextRequest) {
 
     // send the notification email using Notify
     // https://notify.cx/docs/sending-individual-emails
-    // const response = await fetch('https://notify.cx/api/send-email', {
-    const response = await fetch('http://localhost:3000/api/send-email', {
+    const response = await fetch(`https://notify.cx/api/send-email`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
